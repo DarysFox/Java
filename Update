@@ -1,0 +1,27 @@
+public class Practice {
+    public static void main(String[] args) {
+        World world = Processor.constructWorld(LogUtils.processLogs(args[0]));
+
+        System.out.println("There were " + world.vms().size() + " VMs.");
+
+        Map<String, Integer> statisticsByCompileBroker = new HashMap<>();
+        Map<String, Integer> compilationsByVm = new HashMap<>();
+
+        world.vms().values().forEach(vmInfo -> {
+            vmInfo.compilations().values().forEach(compilationInfo -> {
+                var firstEvent = compilationInfo.events().get(0);
+                var relatedPodId = firstEvent.pod().id();
+
+                statisticsByCompileBroker.merge(relatedPodId, 1, Integer::sum);
+                compilationsByVm.merge(vmInfo.vmId(), 1, Integer::sum);
+            });
+        });
+
+        System.out.println("Statistics by compile broker: " + statisticsByCompileBroker);
+
+        System.out.println("Statistics by VM:");
+        compilationsByVm.forEach((vmId, count) ->
+                System.out.println("VM " + vmId + ": " + count + " compilations")
+        );
+    }
+}
